@@ -12,6 +12,8 @@ using System.Management;
 //using System.Management.Instrumentation;
 using System.Security.Cryptography;
 using System.IO;
+using System.Diagnostics;
+using System.IO.Pipes;
 
 
 namespace lab_6
@@ -20,6 +22,7 @@ namespace lab_6
     {
 
         List<DiskInfo> DI;
+        Dictionary<string, string> comboSource;
 
         public Form1()
         {
@@ -104,7 +107,7 @@ namespace lab_6
             //Каждая чаcть отделяется по символу &
             string[] splitProd = splitDeviceId[1].Split('&');
 
-            Prod = splitProd[2].Replace("PROD_", ""); ;
+            Prod = splitProd[2].Replace("PID_", ""); ;
             Prod = Prod.Replace("_", " ");
             return Prod;
         }
@@ -117,7 +120,7 @@ namespace lab_6
             //Каждая чаcть отделяется по символу &
             string[] splitRev = splitDeviceId[1].Split('&');
 
-            Rev = splitRev[3].Replace("REV_", ""); ;
+            Rev = splitRev[3].Replace("VID_", ""); ;
             Rev = Rev.Replace("_", " ");
             return Rev;
         }
@@ -140,22 +143,17 @@ namespace lab_6
 
         private void button1_Click(object sender, EventArgs e)
         {
-           if (DI.Count != 0)
+            //GetUSBInfo();
+            if (DI.Count != 0)
             {
                 string[] Properties = new string[5];
                 Properties[0] = PermitionsBox.Text;
                 Properties[1] = dateTimePicker1.Value.ToShortDateString();
-
                 Properties[2] = Environment.UserName;
                 Properties[3] = Environment.MachineName;
                 Properties[4] = Environment.OSVersion.VersionString;
-
                 richTextBox1.AppendText(DI[DiskBox.SelectedIndex].CreateKey(Properties) + "\n");
             }
-           /*  string g = Base64Encode(Base64Encode("qwerty"));
-            richTextBox1.AppendText(g+"\n");
-            richTextBox1.AppendText(Base64Decode(Base64Decode(g)));*/
-
         }
         private void ReadUSBFlashDrivers(Dictionary<string, string> comboSource)
         {
@@ -260,15 +258,9 @@ namespace lab_6
             DI = new List<DiskInfo>();
             DiskBox.DisplayMember = "Value";
             DiskBox.ValueMember = "Key";
-            Dictionary<string, string> comboSource = new Dictionary<string, string>();
+            comboSource = new Dictionary<string, string>();
             ReadUSBFlashDrivers(comboSource);
             DiskBox.DataSource = new BindingSource(comboSource, null);
-
-
-            /*  Task TwatcherRemove = Task.Factory.StartNew(() =>
-              {
-                  USBRemove();
-              });*/
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -291,7 +283,11 @@ namespace lab_6
                     if (openFileDialog1.OpenFile() != null)
                     {
                         DiskInfo f = DI.Select(x => { string.Compare(x.Letter, openFileDialog1.FileName.Remove(openFileDialog1.FileName.IndexOf(':'))); return x; }).ToList()[0];
-                        string yt = f.CheckKey(openFileDialog1.FileName);
+                        List<string>Params = f.CheckKey(openFileDialog1.FileName);
+                        foreach (string item in Params)
+                        {
+                            richTextBox1.AppendText(item);
+                        }
                     }
                 }
                 catch (Exception ex)

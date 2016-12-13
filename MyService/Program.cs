@@ -12,6 +12,8 @@ namespace MyService
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
+        /// 
+        [STAThread]
         static void Main()
         {
             ServiceBase[] ServicesToRun;

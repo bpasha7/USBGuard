@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace lab_6
+namespace MyService
 {
     class DiskInfo
     {
@@ -61,6 +61,10 @@ namespace lab_6
             for (int i = hashLength - 2; i >= 0; i -= 2)
                 garbagedHash = garbagedHash.Remove(i, 1);
             return garbagedHash;
+        }
+        public DiskInfo(string DeviceID)
+        {
+            _SerialNumber = DeviceID;
         }
         public DiskInfo(string Letter, string Model, decimal DiskSize, string DeviceID)
         {

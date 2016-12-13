@@ -34,11 +34,11 @@
             this.PermitionsBox = new System.Windows.Forms.ComboBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.label3 = new System.Windows.Forms.Label();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.button2 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -111,25 +111,21 @@
             this.tabPage1.Text = "KeyGenerator";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
+            // label3
             // 
-            this.tabPage2.Controls.Add(this.button2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(469, 197);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "KeyChecker";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 69);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(61, 13);
+            this.label3.TabIndex = 7;
+            this.label3.Text = "Expiry Date";
             // 
-            // label1
+            // dateTimePicker1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(60, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "USB Driver";
+            this.dateTimePicker1.Location = new System.Drawing.Point(84, 63);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(119, 20);
+            this.dateTimePicker1.TabIndex = 6;
             // 
             // label2
             // 
@@ -140,21 +136,25 @@
             this.label2.TabIndex = 5;
             this.label2.Text = "Type Licence";
             // 
-            // dateTimePicker1
+            // label1
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(84, 63);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(119, 20);
-            this.dateTimePicker1.TabIndex = 6;
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(60, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "USB Driver";
             // 
-            // label3
+            // tabPage2
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 69);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(61, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Expiry Date";
+            this.tabPage2.Controls.Add(this.button2);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(469, 197);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "KeyChecker";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // button2
             // 
@@ -170,7 +170,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(738, 497);
+            this.ClientSize = new System.Drawing.Size(524, 497);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.richTextBox1);
             this.MaximizeBox = false;
