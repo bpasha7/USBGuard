@@ -105,6 +105,27 @@ namespace MyService
                         {
                             Params.Add(garbageCollector(Base64Decode(Base64Decode(reader.ReadString()))));
                         }
+                    if (Params.Count > 5)
+                    {
+                        if (Params[3] != Environment.MachineName)
+                        {
+                            Params.Clear();
+                            Params.Add("You can not use this Key there! The Machine name is wrong");
+                            return Params;
+                        }
+                        if (Params[4] != Environment.OSVersion.VersionString)
+                        {
+                            Params.Clear();
+                            Params.Add("You can not use this Key there! The OS version is wrong!");
+                            return Params;
+                        }
+                    }
+                    else
+                    {
+                        Params.Clear();
+                        Params.Add("Key is not valid!");
+                        return Params;
+                    }
                     return Params;
                 }
             }

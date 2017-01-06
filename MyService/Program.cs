@@ -1,9 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.Configuration.Install;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceProcess;
+//using System.Collections.Hashtable;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MyService
 {
@@ -14,14 +17,47 @@ namespace MyService
         /// </summary>
         /// 
         [STAThread]
-        static void Main()
+        static void Main(string[] args = null)
         {
             ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            /// <summary>
+            /// Проверка на входные параметры, для инсталяции или деинсталяции
+            /// </summary>
+            /// 
+            if (args.Length != 0)
             {
-                new Service1()
-            };
-            ServiceBase.Run(ServicesToRun);
+                if (System.Environment.UserInteractive)
+                {
+                    try
+                    {
+                        if (args.Length > 0)
+                            switch (args[0])
+                            {
+                                case "-install":
+                                    {
+                                        ManagedInstallerClass.InstallHelper(new string[] { Assembly.GetExecutingAssembly().Location });
+                                        break;
+                                    }
+                                case "-uninstall":
+                                    {
+                                        ManagedInstallerClass.InstallHelper(new string[] { "/u", Assembly.GetExecutingAssembly().Location });
+                                        break;
+                                    }
+                                default: break;
+                            }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+            }
+            else
+            {
+                ServicesToRun = new ServiceBase[] { new Service1() };
+                ServiceBase.Run(ServicesToRun);
+            }
+            
         }
     }
 }

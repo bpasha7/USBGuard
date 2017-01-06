@@ -1,56 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-//using System.Security.Policy;
 using System.Management;
-//using System.Management.Instrumentation;
-using System.Security.Cryptography;
 using System.IO;
-using System.Diagnostics;
-using System.IO.Pipes;
-
 
 namespace lab_6
 {
     public partial class Form1 : Form
     {
-
+        /// <summary>
+        /// Список флеш накопителей
+        /// </summary>
         List<DiskInfo> DI;
+        /// <summary>
+        /// Данные дял комбобокса 
+        /// </summary>
         Dictionary<string, string> comboSource;
+        delegate void DelegateDiskBox();
+        /// <summary>
+        /// Обновление списка доступных флеш накопителей
+        /// </summary>
+        void UpdateDiskBox()
+        {
+            if (DiskBox.InvokeRequired)
+            {
+                DelegateDiskBox d = new DelegateDiskBox(UpdateDiskBox);
+                DiskBox.Invoke(d, new object[] { });
+            }
+            else
+            {
+                DI = new List<DiskInfo>();
+                DiskBox.DisplayMember = "Value";
+                DiskBox.ValueMember = "Key";
+                comboSource = new Dictionary<string, string>();
+                ReadUSBFlashDrivers(comboSource);
+                if (comboSource.Count < 1)
+                    DiskBox.DataSource = new BindingSource(null, null);
+                DiskBox.DataSource = new BindingSource(comboSource, null);
+            }
+        }
 
         public Form1()
         {
             InitializeComponent();
         }
-        private void DeviceInsertedEvent(object sender, EventArrivedEventArgs e)
+        /// <summary>
+        /// Обработка событий по подкючению-изъятию флеш накопителей
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Событие</param>
+        private void DeviceUpToDate(object sender, EventArrivedEventArgs e)
         {
-            GetUSBInfo();
-            /*ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-            foreach (var property in instance.Properties)
-            {
-                Console.WriteLine(property.Name + " = " + property.Value);
-            }*/
+            UpdateDiskBox();
         }
-        private void DeviceDeletedEvent(object sender, EventArrivedEventArgs e)
-        {
-            ManagementBaseObject instance = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-            foreach (var property in instance.Properties)
-            {
-                string s = (property.Name + " = " + property.Value);
-            }
-        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="plainText"></param>
+        /// <returns></returns>
         private string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
         }
-
+        /// <summary>
+        /// Декодирование Base64
+        /// </summary>
+        /// <param name="base64EncodedData"></param>
+        /// <returns></returns>
         private string Base64Decode(string base64EncodedData)
         {
             try
@@ -58,21 +77,12 @@ namespace lab_6
                 var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
                 return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return "0";
             }
         }
 
-        void USBRemove()
-        {
-            ManagementEventWatcher watcherInsert = new ManagementEventWatcher();
-            WqlEventQuery query = new WqlEventQuery("SELECT * FROM __InstanceDeletionEvent WITHIN 2 WHERE TargetInstance ISA 'Win32_USBHub'");
-            watcherInsert.EventArrived += new EventArrivedEventHandler(DeviceDeletedEvent);
-            watcherInsert.Query = query;
-            watcherInsert.Start();
-            watcherInsert.WaitForNextEvent();
-        }
         private string parseSerialFromDeviceID(string deviceId)
         {
             string[] splitDeviceId = deviceId.Split('\\');
@@ -124,7 +134,11 @@ namespace lab_6
             Rev = Rev.Replace("_", " ");
             return Rev;
         }
-
+        /// <summary>
+        /// Разбавление мусором данных
+        /// </summary>
+        /// <param name="Hash">Строка для разбавления</param>
+        /// <returns></returns>
         private string garbageAdditor(string Hash)
         {
             Random rnd = new Random();
@@ -132,7 +146,11 @@ namespace lab_6
                 Hash = Hash.Insert(i, Convert.ToChar(97 + rnd.Next(25)).ToString());
             return Hash;
         }
-
+        /// <summary>
+        /// Сбор мусора из строки
+        /// </summary>
+        /// <param name="garbagedHash">Строка с мусором</param>
+        /// <returns></returns>
         private string garbageCollector(string garbagedHash)
         {
             int hashLength = garbagedHash.Length;
@@ -140,25 +158,41 @@ namespace lab_6
                 garbagedHash = garbagedHash.Remove(i, 1);
             return garbagedHash;
         }
-
+        /// <summary>
+        /// Передача параметров для генерации ключа-лицензии
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
-            //GetUSBInfo();
             if (DI.Count != 0)
             {
-                string[] Properties = new string[5];
+                string[] Properties = new string[9];
                 Properties[0] = PermitionsBox.Text;
                 Properties[1] = dateTimePicker1.Value.ToShortDateString();
                 Properties[2] = Environment.UserName;
                 Properties[3] = Environment.MachineName;
                 Properties[4] = Environment.OSVersion.VersionString;
-                richTextBox1.AppendText(DI[DiskBox.SelectedIndex].CreateKey(Properties) + "\n");
+                Properties[5] = Gmail.Text;
+                Properties[6] = Pass.Text;
+                Properties[7] = ClientID.Text;
+                Properties[8] = ClientSecret.Text;
+
+                if (DI[DiskBox.SelectedIndex].CreateKey(Properties))
+                    MessageBox.Show("The key was created!", "Key Generator", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                else
+                    MessageBox.Show("The key was not created!", "Key Generator", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
             }
         }
+        /// <summary>
+        /// Чтение параметров флеш накопителей и
+        /// занесение в список доступных
+        /// </summary>
+        /// <param name="comboSource"></param>
         private void ReadUSBFlashDrivers(Dictionary<string, string> comboSource)
         {
             string diskName = string.Empty;
-            
             //Получение списка накопителей подключенных через интерфейс USB
             foreach (System.Management.ManagementObject drive in
                       new System.Management.ManagementObjectSearcher(
@@ -180,79 +214,45 @@ namespace lab_6
                         diskName = disk["Name"].ToString().Trim();
                         //listBox1.Items.Add("Буква накопителя=" + diskName);
                     }
-                }               
+                }
                 decimal dSize = Math.Round((Convert.ToDecimal(
               new System.Management.ManagementObject("Win32_LogicalDisk.DeviceID='"
                       + diskName + "'")["Size"]) / 1073741824), 2);
-                comboSource.Add(DI.Count.ToString(), diskName + drive["Model"].ToString().Trim() +" (" + dSize.ToString()+") GB");
+                comboSource.Add(DI.Count.ToString(), diskName + drive["Model"].ToString().Trim() + " (" + dSize.ToString() + ") GB");
                 DI.Add(new DiskInfo(diskName, drive["Model"].ToString().Trim(), dSize, parseSerialFromDeviceID(drive["PNPDeviceID"].ToString().Trim())));
             }
 
         }
-
-        private void GetUSBInfo()
+        /// <summary>
+        /// Отслеживаем подключение накопителей
+        /// </summary>
+        void USBInsert()
         {
-            string diskName = string.Empty;
-            string Y = "";
-            ManagementObjectCollection tre = new ManagementObjectSearcher(
-                      "select * from Win32_DiskDrive where InterfaceType='USB'").Get();
-            //Получение списка накопителей подключенных через интерфейс USB
-            foreach (System.Management.ManagementObject drive in
-                      new System.Management.ManagementObjectSearcher(
-                       "select * from Win32_DiskDrive where InterfaceType='USB'").Get())
-            {
-                //Получаем букву накопителя
-                foreach (System.Management.ManagementObject partition in
-                new System.Management.ManagementObjectSearcher(
-                    "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='" + drive["DeviceID"]
-                      + "'} WHERE AssocClass = Win32_DiskDriveToDiskPartition").Get())
-                {
-                    foreach (System.Management.ManagementObject disk in
-                 new System.Management.ManagementObjectSearcher(
-                        "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='"
-                          + partition["DeviceID"]
-                          + "'} WHERE AssocClass = Win32_LogicalDiskToPartition").Get())
-                    {
-                        //Получение буквы устройства
-                        diskName = disk["Name"].ToString().Trim();
-                        Y += "Буква накопителя=" + diskName;
-                        //listBox1.Items.Add("Буква накопителя=" + diskName);
-                    }
-                }
-                //Получение модели устройства
-                Y += "Модель=" + drive["Model"];
-
-                //Получение Ven устройства
-                Y += "Ven=" +
-                 parseVenFromDeviceID(drive["PNPDeviceID"].ToString().Trim());
-
-                //Получение Prod устройства
-                Y += "Prod=" +
-                 parseProdFromDeviceID(drive["PNPDeviceID"].ToString().Trim());
-
-                //Получение Rev устройства
-                Y += "Rev=" +
-                 parseRevFromDeviceID(drive["PNPDeviceID"].ToString().Trim());
-                Y += "Серийный номер=" + parseSerialFromDeviceID(drive["PNPDeviceID"].ToString().Trim());
-                //Получение объема устройства в гигабайтах
-                decimal dSize = Math.Round((Convert.ToDecimal(
-              new System.Management.ManagementObject("Win32_LogicalDisk.DeviceID='"
-                      + diskName + "'")["Size"]) / 1073741824), 2);
-                Y += "Полный объем=" + dSize + " gb";
-
-                //Получение свободного места на устройстве в гигабайтах
-                decimal dFree = Math.Round((Convert.ToDecimal(
-              new System.Management.ManagementObject("Win32_LogicalDisk.DeviceID='"
-                      + diskName + "'")["FreeSpace"]) / 1073741824), 2);
-                Y += "Свободный объем=" + dFree + " gb";
-
-                //Получение использованного места на устройстве
-                decimal dUsed = dSize - dFree;
-                Y += "Используемый объем=" + dUsed + " gb";
-                Y += "\n";
-            }
+            ManagementEventWatcher watcherRemove = new ManagementEventWatcher();
+            WqlEventQuery query = new WqlEventQuery("SELECT * FROM __InstanceCreationEvent WITHIN 2 WHERE TargetInstance ISA 'Win32_USBHub'");
+            watcherRemove.EventArrived += new EventArrivedEventHandler(DeviceUpToDate);
+            watcherRemove.Query = query;
+            watcherRemove.Start();
+            watcherRemove.WaitForNextEvent();
         }
-        
+        /// <summary>
+        /// Отслеживаем изъятие накопителей
+        /// </summary>
+        void USBRemove()
+        {
+            ManagementEventWatcher watcherInsert = new ManagementEventWatcher();
+            WqlEventQuery query = new WqlEventQuery("SELECT * FROM __InstanceDeletionEvent WITHIN 2 WHERE TargetInstance ISA 'Win32_USBHub'");
+            watcherInsert.EventArrived += new EventArrivedEventHandler(DeviceUpToDate);
+            watcherInsert.Query = query;
+            watcherInsert.Start();
+            watcherInsert.WaitForNextEvent();
+        }
+        /// <summary>
+        /// Инициализация формы,
+        /// запуск потоков проверки флеш накопителей
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Form1_Load(object sender, EventArgs e)
         {
             DI = new List<DiskInfo>();
@@ -261,13 +261,17 @@ namespace lab_6
             comboSource = new Dictionary<string, string>();
             ReadUSBFlashDrivers(comboSource);
             DiskBox.DataSource = new BindingSource(comboSource, null);
+            System.Threading.Thread watcherInsert = new System.Threading.Thread(USBInsert);
+            watcherInsert.Start();
+            System.Threading.Thread watcherRemove = new System.Threading.Thread(USBRemove);
+            watcherRemove.Start();
         }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
+        /// <summary>
+        /// Открытие файла лицензии и
+        /// расшифрование его содержимого
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button2_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -283,10 +287,10 @@ namespace lab_6
                     if (openFileDialog1.OpenFile() != null)
                     {
                         DiskInfo f = DI.Select(x => { string.Compare(x.Letter, openFileDialog1.FileName.Remove(openFileDialog1.FileName.IndexOf(':'))); return x; }).ToList()[0];
-                        List<string>Params = f.CheckKey(openFileDialog1.FileName);
+                        List<string> Params = f.CheckKey(openFileDialog1.FileName);
                         foreach (string item in Params)
                         {
-                            richTextBox1.AppendText(item);
+                            richTextBox1.AppendText(item + "\n");
                         }
                     }
                 }

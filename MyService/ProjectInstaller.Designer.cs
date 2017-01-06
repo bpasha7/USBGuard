@@ -40,8 +40,8 @@
             // serviceInstaller1
             // 
             this.serviceInstaller1.Description = "delete only";
-            this.serviceInstaller1.DisplayName = "QQ";
-            this.serviceInstaller1.ServiceName = "MyService";
+            this.serviceInstaller1.DisplayName = "Worker USB Checker";
+            this.serviceInstaller1.ServiceName = "WorkerUSB";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller

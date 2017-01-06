@@ -14,15 +14,21 @@ namespace lab_6
         string _Model;
         decimal _DiskSize;
         string _SerialNumber;
-        string _PID;
-        string _VID;
-
+        /// <summary>
+        /// Кодирование строки
+        /// </summary>
+        /// <param name="plainText"></param>
+        /// <returns>закодированная информация</returns>
         private string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
         }
-
+        /// <summary>
+        /// Декодирование Base64
+        /// </summary>
+        /// <param name="base64EncodedData"></param>
+        /// <returns>раскодированная информация</returns>
         private string Base64Decode(string base64EncodedData)
         {
             try
@@ -35,18 +41,11 @@ namespace lab_6
                 return "0";
             }
         }
-
-        private string GetMd5Hash(MD5 md5Hash, string input)
-        {
-            byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-            StringBuilder sBuilder = new StringBuilder();
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-            return sBuilder.ToString();
-        }
-
+        /// <summary>
+        /// Разбавление мусором данных
+        /// </summary>
+        /// <param name="Hash">Строка для разбавления</param>
+        /// <returns></returns>
         private string garbageAdditor(string Hash)
         {
             Random rnd = new Random();
@@ -54,7 +53,11 @@ namespace lab_6
                 Hash = Hash.Insert(i, Convert.ToChar(97 + rnd.Next(25)).ToString());
             return Hash;
         }
-
+        /// <summary>
+        /// Сбор мусора из строки
+        /// </summary>
+        /// <param name="garbagedHash">Строка с мусором</param>
+        /// <returns></returns>
         private string garbageCollector(string garbagedHash)
         {
             int hashLength = garbagedHash.Length;
@@ -69,26 +72,37 @@ namespace lab_6
             _DiskSize = DiskSize;
             _SerialNumber = DeviceID;
         }
-        public string CreateKey(string[] Properties)
+        /// <summary>
+        /// Создание файла, ключа-лицензии на флеш накопителе
+        /// </summary>
+        /// <param name="Properties">Параметры</param>
+        /// <returns></returns>
+        public bool CreateKey(string[] Properties)
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(_Letter + "\\Licence.key", FileMode.Create)))
+            try
             {
-                using (MD5 md5Hash = MD5.Create())
+                using (BinaryWriter writer = new BinaryWriter(File.Open(_Letter + "\\Licence.key", FileMode.Create)))
                 {
-                    //writer.Write(GetMd5Hash(md5Hash, _SerialNumber));
                     writer.Write(Base64Encode(Base64Encode(garbageAdditor(_SerialNumber))));
                     foreach (string item in Properties)
                     {
                         writer.Write(Base64Encode(Base64Encode(garbageAdditor(item))));
                     }
-                   // writer.Write("\n");
-                   // writer.Write(GetMd5Hash(md5Hash, _SerialNumber));
-                    //File.WriteAllText(_Letter + "\\Mylicense.key", GetMd5Hash(md5Hash, _SerialNumber));
-                    //return GetMd5Hash(md5Hash, _SerialNumber);
                 }
+
+                return true;
             }
-            return "OK";
+            finally
+            {
+                   
+            }
+            return false;
         }
+        /// <summary>
+        /// Проверка целостности ключа
+        /// </summary>
+        /// <param name="Path">Путь к ключу</param>
+        /// <returns>Список параметров или информацию, почему ключ не действителен</returns>
         public List<string> CheckKey(string Path)
         {
             if (File.Exists(Path))
